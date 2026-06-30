@@ -1,0 +1,151 @@
+<?php
+
+namespace App\Providers;
+
+use App\Domain\Tenancy\Services\TenantContext;
+use App\Domain\Tenancy\Services\TenantResolver;
+use App\Contracts\Payments\PaymentProviderContract;
+use App\Domain\Developer\Interfaces\ApiCredentialServiceInterface;
+use App\Domain\Developer\Interfaces\ApiGatewayInterface;
+use App\Domain\Developer\Interfaces\ApiUsageTrackerInterface;
+use App\Domain\Developer\Interfaces\ApiVersionResolverInterface;
+use App\Domain\Developer\Interfaces\DeveloperRepositoryInterface;
+use App\Domain\Developer\Interfaces\RateLimitServiceInterface;
+use App\Domain\Developer\Interfaces\WebhookServiceInterface;
+use App\Domain\Developer\Repositories\EloquentDeveloperRepository;
+use App\Domain\Developer\Services\ApiCredentialService;
+use App\Domain\Developer\Services\ApiGateway;
+use App\Domain\Developer\Services\ApiUsageTracker;
+use App\Domain\Developer\Services\ApiVersionResolver;
+use App\Domain\Developer\Services\RateLimitService;
+use App\Domain\Developer\Services\WebhookService;
+use App\Domain\Ledger\Interfaces\LedgerPostingInterface;
+use App\Domain\Ledger\Interfaces\LedgerQueryInterface;
+use App\Domain\Ledger\Interfaces\LedgerReconciliationInterface;
+use App\Domain\Ledger\Interfaces\LedgerRepositoryInterface;
+use App\Domain\Ledger\Repositories\EloquentLedgerRepository;
+use App\Domain\Ledger\Services\LedgerBalanceService;
+use App\Domain\Ledger\Services\LedgerPostingService;
+use App\Domain\Ledger\Services\LedgerReconciliationService;
+use App\Domain\Notification\Interfaces\NotificationChannelManagerInterface;
+use App\Domain\Notification\Interfaces\NotificationRepositoryInterface;
+use App\Domain\Notification\Interfaces\NotificationServiceInterface;
+use App\Domain\Notification\Interfaces\NotificationTemplateResolverInterface;
+use App\Domain\Notification\Repositories\EloquentNotificationRepository;
+use App\Domain\Notification\Services\NotificationChannelManager;
+use App\Domain\Notification\Services\NotificationService;
+use App\Domain\Notification\Services\NotificationTemplateResolver;
+use App\Domain\Payment\Interfaces\PaymentProviderManagerInterface;
+use App\Domain\Payment\Interfaces\PaymentRepositoryInterface;
+use App\Domain\Payment\Interfaces\PaymentServiceInterface;
+use App\Domain\Payment\Repositories\EloquentPaymentRepository;
+use App\Domain\Payment\Services\PaymentProviderManager;
+use App\Domain\Payment\Services\PaymentService;
+use App\Domain\Product\Interfaces\ProductCapabilityResolverInterface;
+use App\Domain\Product\Interfaces\ProductProviderResolverInterface;
+use App\Domain\Product\Interfaces\ProductRepositoryInterface;
+use App\Domain\Product\Repositories\EloquentProductRepository;
+use App\Domain\Product\Services\ProductCapabilityService;
+use App\Domain\Product\Services\ProductProviderResolver;
+use App\Domain\Reporting\Interfaces\AnalyticsCollectorInterface;
+use App\Domain\Reporting\Interfaces\ExportEngineInterface;
+use App\Domain\Reporting\Interfaces\KPIEngineInterface;
+use App\Domain\Reporting\Interfaces\ReportGeneratorInterface;
+use App\Domain\Reporting\Interfaces\ReportingRepositoryInterface;
+use App\Domain\Reporting\Interfaces\ScheduledReportServiceInterface;
+use App\Domain\Reporting\Repositories\EloquentReportingRepository;
+use App\Domain\Reporting\Services\AnalyticsCollector;
+use App\Domain\Reporting\Services\ExportEngine;
+use App\Domain\Reporting\Services\KPIEngine;
+use App\Domain\Reporting\Services\ReportGenerator;
+use App\Domain\Reporting\Services\ScheduledReportService;
+use App\Domain\Support\Interfaces\AssignmentEngineInterface;
+use App\Domain\Support\Interfaces\KnowledgeBaseServiceInterface;
+use App\Domain\Support\Interfaces\SlaEngineInterface;
+use App\Domain\Support\Interfaces\SupportRepositoryInterface;
+use App\Domain\Support\Interfaces\SupportTicketServiceInterface;
+use App\Domain\Support\Repositories\EloquentSupportRepository;
+use App\Domain\Support\Services\AssignmentEngine;
+use App\Domain\Support\Services\KnowledgeBaseService;
+use App\Domain\Support\Services\SlaEngine;
+use App\Domain\Support\Services\TicketService;
+use App\Domain\Wallet\Interfaces\BalanceCalculatorInterface;
+use App\Domain\Wallet\Interfaces\ReservationInterface;
+use App\Domain\Wallet\Interfaces\WalletLedgerPostingInterface;
+use App\Domain\Wallet\Interfaces\WalletRepositoryInterface;
+use App\Domain\Wallet\Interfaces\WalletServiceInterface;
+use App\Domain\Wallet\Repositories\EloquentWalletRepository;
+use App\Domain\Wallet\Services\WalletBalanceService;
+use App\Domain\Wallet\Services\WalletLedgerPostingService;
+use App\Domain\Wallet\Services\WalletReservationService;
+use App\Domain\Wallet\Services\WalletService;
+use App\Contracts\Verification\VerificationProviderContract;
+use App\Domain\Verification\Interfaces\VerificationProviderManagerInterface;
+use App\Domain\Verification\Interfaces\VerificationRepositoryInterface;
+use App\Domain\Verification\Interfaces\VerificationServiceInterface;
+use App\Domain\Verification\Repositories\EloquentVerificationRepository;
+use App\Domain\Verification\Services\VerificationProviderManager;
+use App\Domain\Verification\Services\VerificationService;
+use App\Infrastructure\SwiftVerify\SwiftVerifyAdapter;
+use App\Infrastructure\Paystack\PaystackAdapter;
+use App\Services\FeatureFlagService;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\ServiceProvider;
+
+class AppServiceProvider extends ServiceProvider
+{
+    public function register(): void
+    {
+        $this->app->singleton(TenantContext::class);
+        $this->app->singleton(TenantResolver::class);
+        $this->app->singleton(FeatureFlagService::class);
+        $this->app->bind(DeveloperRepositoryInterface::class, EloquentDeveloperRepository::class);
+        $this->app->bind(ApiCredentialServiceInterface::class, ApiCredentialService::class);
+        $this->app->bind(ApiVersionResolverInterface::class, ApiVersionResolver::class);
+        $this->app->bind(ApiUsageTrackerInterface::class, ApiUsageTracker::class);
+        $this->app->bind(RateLimitServiceInterface::class, RateLimitService::class);
+        $this->app->bind(ApiGatewayInterface::class, ApiGateway::class);
+        $this->app->bind(WebhookServiceInterface::class, WebhookService::class);
+        $this->app->bind(PaymentProviderContract::class, PaystackAdapter::class);
+        $this->app->bind(PaymentProviderManagerInterface::class, PaymentProviderManager::class);
+        $this->app->bind(PaymentRepositoryInterface::class, EloquentPaymentRepository::class);
+        $this->app->bind(PaymentServiceInterface::class, PaymentService::class);
+        $this->app->bind(ProductRepositoryInterface::class, EloquentProductRepository::class);
+        $this->app->bind(ProductCapabilityResolverInterface::class, ProductCapabilityService::class);
+        $this->app->bind(ProductProviderResolverInterface::class, ProductProviderResolver::class);
+        $this->app->bind(NotificationRepositoryInterface::class, EloquentNotificationRepository::class);
+        $this->app->bind(NotificationTemplateResolverInterface::class, NotificationTemplateResolver::class);
+        $this->app->bind(NotificationChannelManagerInterface::class, NotificationChannelManager::class);
+        $this->app->bind(NotificationServiceInterface::class, NotificationService::class);
+        $this->app->bind(ReportingRepositoryInterface::class, EloquentReportingRepository::class);
+        $this->app->bind(AnalyticsCollectorInterface::class, AnalyticsCollector::class);
+        $this->app->bind(KPIEngineInterface::class, KPIEngine::class);
+        $this->app->bind(ReportGeneratorInterface::class, ReportGenerator::class);
+        $this->app->bind(ExportEngineInterface::class, ExportEngine::class);
+        $this->app->bind(ScheduledReportServiceInterface::class, ScheduledReportService::class);
+        $this->app->bind(SupportRepositoryInterface::class, EloquentSupportRepository::class);
+        $this->app->bind(SupportTicketServiceInterface::class, TicketService::class);
+        $this->app->bind(AssignmentEngineInterface::class, AssignmentEngine::class);
+        $this->app->bind(SlaEngineInterface::class, SlaEngine::class);
+        $this->app->bind(KnowledgeBaseServiceInterface::class, KnowledgeBaseService::class);
+        $this->app->bind(VerificationProviderContract::class, SwiftVerifyAdapter::class);
+        $this->app->bind(VerificationProviderManagerInterface::class, VerificationProviderManager::class);
+        $this->app->bind(VerificationRepositoryInterface::class, EloquentVerificationRepository::class);
+        $this->app->bind(VerificationServiceInterface::class, VerificationService::class);
+        $this->app->bind(LedgerRepositoryInterface::class, EloquentLedgerRepository::class);
+        $this->app->bind(LedgerPostingInterface::class, LedgerPostingService::class);
+        $this->app->bind(LedgerQueryInterface::class, LedgerBalanceService::class);
+        $this->app->bind(LedgerReconciliationInterface::class, LedgerReconciliationService::class);
+        $this->app->bind(WalletRepositoryInterface::class, EloquentWalletRepository::class);
+        $this->app->bind(WalletServiceInterface::class, WalletService::class);
+        $this->app->bind(WalletLedgerPostingInterface::class, WalletLedgerPostingService::class);
+        $this->app->bind(BalanceCalculatorInterface::class, WalletBalanceService::class);
+        $this->app->bind(ReservationInterface::class, WalletReservationService::class);
+    }
+
+    public function boot(): void
+    {
+        Model::preventLazyLoading(! $this->app->isProduction());
+        Model::unguard(false);
+    }
+}
