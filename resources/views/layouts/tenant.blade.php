@@ -20,6 +20,7 @@
             <a class="nav-link @if(request()->routeIs('tenant.wallet.*')) active @endif" href="{{ route('tenant.wallet.index', $tenantParam) }}"><i class="fa-solid fa-wallet"></i>Wallet</a>
             <a class="nav-link @if(request()->routeIs('tenant.verification.*')) active @endif" href="{{ route('tenant.verification.index', $tenantParam) }}"><i class="fa-solid fa-id-card"></i>Verification</a>
             <a class="nav-link @if(request()->routeIs('tenant.products.*')) active @endif" href="{{ route('tenant.products.index', $tenantParam) }}"><i class="fa-solid fa-box"></i>Products</a>
+            <a class="nav-link @if(request()->routeIs('tenant.notifications.*')) active @endif" href="{{ route('tenant.notifications.index', $tenantParam) }}"><i class="fa-solid fa-bell"></i>Notifications</a>
             <a class="nav-link @if(request()->routeIs('tenant.support.*')) active @endif" href="{{ route('tenant.support.index', $tenantParam) }}"><i class="fa-solid fa-life-ring"></i>Support</a>
             <a class="nav-link @if(request()->routeIs('tenant.customer.*')) active @endif" href="{{ route('tenant.customer.dashboard', $tenantParam) }}"><i class="fa-solid fa-user"></i>Customer</a>
         </nav>

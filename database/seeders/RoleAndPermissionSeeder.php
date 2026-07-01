@@ -31,6 +31,10 @@ class RoleAndPermissionSeeder extends Seeder
             'support.tickets.create' => 'support',
             'support.tickets.update' => 'support',
             'support.tickets.comment' => 'support',
+            'notifications.view' => 'notifications',
+            'notifications.manage' => 'notifications',
+            'notifications.send' => 'notifications',
+            'notifications.preferences' => 'notifications',
             'settings.view' => 'settings',
             'settings.update' => 'settings',
         ];
@@ -60,6 +64,10 @@ class RoleAndPermissionSeeder extends Seeder
             'support.tickets.create',
             'support.tickets.update',
             'support.tickets.comment',
+            'notifications.view',
+            'notifications.manage',
+            'notifications.send',
+            'notifications.preferences',
             'settings.view',
             'settings.update',
         ])->get());
@@ -70,6 +78,8 @@ class RoleAndPermissionSeeder extends Seeder
             'support.tickets.view',
             'support.tickets.create',
             'support.tickets.comment',
+            'notifications.view',
+            'notifications.preferences',
             'settings.view',
         ])->get());
         $staff->syncPermissions(Permission::whereIn('name', [
@@ -77,6 +87,8 @@ class RoleAndPermissionSeeder extends Seeder
             'support.tickets.view',
             'support.tickets.create',
             'support.tickets.comment',
+            'notifications.view',
+            'notifications.preferences',
         ])->get());
     }
 }

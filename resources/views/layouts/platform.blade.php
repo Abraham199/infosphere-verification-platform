@@ -19,6 +19,7 @@
             <a class="nav-link @if(request()->routeIs('platform.wallet.*')) active @endif" href="{{ route('platform.wallet.index') }}"><i class="fa-solid fa-wallet"></i>Wallets</a>
             <a class="nav-link @if(request()->routeIs('platform.verification.*')) active @endif" href="{{ route('platform.verification.index') }}"><i class="fa-solid fa-id-card"></i>Verifications</a>
             <a class="nav-link @if(request()->routeIs('platform.products.*')) active @endif" href="{{ route('platform.products.index') }}"><i class="fa-solid fa-boxes-stacked"></i>Products</a>
+            <a class="nav-link @if(request()->routeIs('platform.notifications.*')) active @endif" href="{{ route('platform.notifications.index') }}"><i class="fa-solid fa-bell"></i>Notifications</a>
             <a class="nav-link @if(request()->routeIs('platform.support.*')) active @endif" href="{{ route('platform.support.index') }}"><i class="fa-solid fa-life-ring"></i>Support</a>
         </nav>
     </aside>
