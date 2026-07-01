@@ -9,11 +9,13 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\Platform\DashboardController as PlatformDashboardController;
 use App\Http\Controllers\Platform\ProductController as PlatformProductController;
+use App\Http\Controllers\Platform\SupportController as PlatformSupportController;
 use App\Http\Controllers\Platform\VerificationController as PlatformVerificationController;
 use App\Http\Controllers\Platform\WalletController as PlatformWalletController;
 use App\Http\Controllers\Tenant\CustomerDashboardController;
 use App\Http\Controllers\Tenant\DashboardController as TenantDashboardController;
 use App\Http\Controllers\Tenant\ProductController as TenantProductController;
+use App\Http\Controllers\Tenant\SupportController as TenantSupportController;
 use App\Http\Controllers\Tenant\VerificationController as TenantVerificationController;
 use App\Http\Controllers\Tenant\WalletController as TenantWalletController;
 use Illuminate\Support\Facades\Route;
@@ -53,6 +55,11 @@ Route::middleware(['auth', 'verified', 'role:Super Admin'])
         Route::get('dashboard', PlatformDashboardController::class)->name('dashboard');
         Route::get('wallet', PlatformWalletController::class)->name('wallet.index');
         Route::get('verifications', PlatformVerificationController::class)->name('verification.index');
+        Route::get('support', [PlatformSupportController::class, 'index'])->name('support.index');
+        Route::get('support/{reference}', [PlatformSupportController::class, 'show'])->name('support.show');
+        Route::post('support/{reference}/assignments', [PlatformSupportController::class, 'assign'])->name('support.assignments.store');
+        Route::patch('support/{reference}/status', [PlatformSupportController::class, 'status'])->name('support.status');
+        Route::post('support/{reference}/internal-notes', [PlatformSupportController::class, 'storeInternalNote'])->name('support.internal-notes.store');
         Route::get('products', [PlatformProductController::class, 'index'])->name('products.index');
         Route::get('products/create', [PlatformProductController::class, 'create'])->name('products.create');
         Route::post('products', [PlatformProductController::class, 'store'])->name('products.store');
@@ -92,4 +99,10 @@ Route::middleware(['auth', 'verified', 'tenant'])
             Route::get('{reference}', [TenantVerificationController::class, 'show'])->name('show');
         });
         Route::get('products', TenantProductController::class)->name('products.index');
+        Route::middleware('permission:support.tickets.view')->prefix('support')->as('support.')->group(function (): void {
+            Route::get('/', [TenantSupportController::class, 'index'])->name('index');
+            Route::post('/', [TenantSupportController::class, 'store'])->middleware('permission:support.tickets.create')->name('store');
+            Route::get('{reference}', [TenantSupportController::class, 'show'])->name('show');
+            Route::post('{reference}/notes', [TenantSupportController::class, 'storeNote'])->middleware('permission:support.tickets.comment')->name('notes.store');
+        });
     });
